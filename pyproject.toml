@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "yepcode-run"
+version = "1.0.0"
+description = "YepCode Run - A powerful serverless runtime and SDK for executing code in secure sandboxes"
+authors = ["YepCode Developers <developers@yepcode.io>"]
+license = "See LICENSE file"
+readme = "README.md"
+homepage = "https://yepcode.io/run/"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.32.3"
+python-dotenv = "^1.0.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
