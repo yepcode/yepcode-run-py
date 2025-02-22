@@ -50,10 +50,10 @@ YEPCODE_API_TOKEN=your-api-token
 The `YepCodeRun` class provides flexible code execution capabilities:
 
 ```python
-from yepcode_run import YepCodeRun
+from yepcode_run import YepCodeRun, YepCodeApiConfig
 
 runner = YepCodeRun(
-    api_token='your-api-token'  # We'll try to read it from the YEPCODE_API_TOKEN environment variable
+    YepCodeApiConfig(api_token='your-api-token')  # We'll try to read it from the YEPCODE_API_TOKEN environment variable
 )
 
 # Execute code with full options
@@ -82,10 +82,10 @@ existing_execution = runner.get_execution('execution-id')
 You may use environment variables in your code with `process.env` (JavaScript) or `os.getenv` (Python), and you may manage this environment variables in the YepCode platform ([docs here](https://yepcode.io/docs/processes/team-variables)), or using this `YepCodeEnv` class:
 
 ```python
-from yepcode_run import YepCodeEnv
+from yepcode_run import YepCodeEnv, YepCodeApiConfig
 
 env = YepCodeEnv(
-    api_token='your-api-token'
+    YepCodeApiConfig(api_token='your-api-token')
 )
 
 # Set environment variables
@@ -105,14 +105,14 @@ env.del_env_var('API_KEY')
 You can also directly access the full [YepCode API](https://yepcode.io/docs/api) using the `YepCodeApi` class:
 
 ```python
-from yepcode_run import YepCodeApi
+from yepcode_run import YepCodeApi, YepCodeApiConfig
 
 api = YepCodeApi(
-  api_token='your-api-token'
+  YepCodeApiConfig(api_token='your-api-token')
 )
 
 # Get all processes
-processes = await api.get_processes()
+processes = api.get_processes()
 ```
 
 
