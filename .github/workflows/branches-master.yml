@@ -1,0 +1,12 @@
+name: branches-master
+on:
+  push:
+    branches:
+      - master
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+    secrets: inherit

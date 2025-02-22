@@ -1,0 +1,29 @@
+name: tags-v
+on:
+  push:
+    tags:
+      - v[0-9]+.[0-9]+.[0-9]+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container:
+      image: python:3.12-slim
+      env:
+        YEPCODE_API_TOKEN: ${{ secrets.TEST_YEPCODE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure poetry
+        run: |-
+          apt update && apt install -y curl gcc g++ && curl -sSL https://install.python-poetry.org | python3 -
+          export PATH="${PATH}:${HOME}/.local/bin"
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
+          poetry install
+      - name: Run pytest
+        run: "poetry run pytest"
+      - name: Build
+        run: "poetry build"
+      - name: Publish
+        run: 'poetry publish -r yepcode-pypi -u "${{ vars.YEPCODE_PYPI_USERNAME }}" -p "${{ secrets.YEPCODE_PYPI_PASSWORD }}"'
