@@ -4,7 +4,7 @@ A powerful serverless runtime and SDK for executing code in secure sandboxes, wi
 
 Built on top of [YepCode Cloud](https://yepcode.io/), the enterprise platform that enables seamless script execution for AI agents, data processing, API integrations, and automation workflows.
 
-## Try it Now!
+## Try it Now
 
 Ready to see it in action? Visit our 🎮 [interactive playground](https://yepcode.io/run) (no registration required) where you can:
 
@@ -114,7 +114,6 @@ api = YepCodeApi(
 # Get all processes
 processes = api.get_processes()
 ```
-
 
 ## 📚 SDK API Reference
 

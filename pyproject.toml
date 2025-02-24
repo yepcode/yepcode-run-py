@@ -12,14 +12,10 @@ python = "^3.12"
 requests = "^2.32.3"
 python-dotenv = "^1.0.1"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.test.dependencies]
 pytest = "^8.3.4"
 pytest-cov = "^6.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[[tool.poetry.source]]
-name = "yepcode-pypi"
-url = "https://pypi.yepcode.io"
