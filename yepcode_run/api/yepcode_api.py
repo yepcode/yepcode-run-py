@@ -25,7 +25,11 @@ class YepCodeApiError(Exception):
 class YepCodeApi:
     def __init__(self, config: YepCodeApiConfig = None):
         config = config or YepCodeApiConfig()
-        config_dict = {k: v for k, v in config.__dict__.items() if v is not None} if config else {}
+        config_dict = (
+            {k: v for k, v in config.__dict__.items() if v is not None}
+            if config
+            else {}
+        )
         final_config = {
             "auth_url": "https://cloud.yepcode.io/auth/realms/yepcode/protocol/openid-connect/token",
             "api_host": "https://cloud.yepcode.io",
@@ -130,7 +134,7 @@ class YepCodeApi:
             **(options.get("headers", {})),
         }
 
-        endpoint = endpoint.lstrip('/')
+        endpoint = endpoint.lstrip("/")
         url = urljoin(f"{self._get_base_url()}/", endpoint)
         request_kwargs = {"headers": headers, "timeout": self.timeout / 1000}
 
@@ -149,8 +153,14 @@ class YepCodeApi:
             return self._request(method, endpoint, options)
 
         if not response.ok:
+            try:
+                error_response = response.json()
+                message = error_response.get("message", response.reason)
+            except ValueError:
+                message = response.reason
+
             raise YepCodeApiError(
-                f"HTTP error in endpoint {method} {endpoint} status: {response.status_code}",
+                f"HTTP error {response.status_code} in endpoint {method} {endpoint}: {message}",
                 response.status_code,
             )
 
