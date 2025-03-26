@@ -31,11 +31,14 @@ class YepCodeApi:
             else {}
         )
         final_config = {
-            "auth_url": "https://cloud.yepcode.io/auth/realms/yepcode/protocol/openid-connect/token",
             "api_host": "https://cloud.yepcode.io",
             "timeout": 60000,
             **config_dict,
         }
+        if not final_config.get("auth_url"):
+            final_config["auth_url"] = (
+                f"{final_config['api_host']}/auth/realms/yepcode/protocol/openid-connect/token"
+            )
 
         if (
             not final_config.get("access_token")
