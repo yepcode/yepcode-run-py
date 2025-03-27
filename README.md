@@ -1,59 +1,49 @@
-# YepCode Run
+![YepCode Run SDK Preview](/readme-assets/cover.png)
 
-A powerful serverless runtime and SDK for executing code in secure sandboxes, with a complete platform for building, managing, and monitoring your script executions.
+<div align="center">
 
-Built on top of [YepCode Cloud](https://yepcode.io/), the enterprise platform that enables seamless script execution for AI agents, data processing, API integrations, and automation workflows.
+[![PyPI Version](https://img.shields.io/pypi/v/yepcode-run)](https://pypi.org/project/yepcode-run/)
+[![PyPI Downloads](https://img.shields.io/pypi/dm/yepcode-run)](https://pypi.org/project/yepcode-run/)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/yepcode/yepcode-run-py/ci.yml)](https://github.com/yepcode/yepcode-run-py/actions)
 
-## Try it Now
+</div>
 
-Ready to see it in action? Visit our 🎮 [interactive playground](https://yepcode.io/run) (no registration required) where you can:
+## What is YepCode Run?
 
-- Test code execution in real-time
-- Experiment with different languages and packages
-- Learn through hands-on examples
+[YepCode Run](https://yepcode.io/run) is a powerful serverless runtime that enables secure code execution in isolated sandboxes. With our comprehensive SDK and platform, you can effortlessly build, manage, and monitor your script executions. Get started quickly using our [JavaScript SDK](https://www.npmjs.com/package/@yepcode/run) or [Python SDK](https://pypi.org/project/yepcode-run).
 
-## Why YepCode Run?
+Powered by [YepCode Cloud](https://yepcode.io/), our enterprise-grade platform delivers seamless script execution capabilities for AI agents, data processing pipelines, API integrations, and automation workflows. Focus on your code while we handle the infrastructure.
 
-Running arbitrary code in production environments presents significant challenges around security, scalability, and infrastructure management. This is especially critical when dealing with **AI-generated code** from LLMs, where code execution needs to be both secure and reliable at scale and may also need to install external dependencies.
+## Quick start
 
-YepCode Run eliminates these complexities by providing enterprise-grade sandboxing, automatic scaling, and comprehensive security measures out of the box - allowing you to focus on your code instead of infrastructure concerns.
-
-## 🚀 Features
-
-- 🚀 **Instant Code Execution** - Run JavaScript and Python code in secure sandboxes without any setup
-- 🔒 **Enterprise-Ready Platform** - Full suite of tools for building, deploying and monitoring processes
-- 🔄 **Built for Integration** - Perfect for AI agents, data processing, API integrations and automation workflows
-- 📊 **Complete Observability** - Monitor executions, manage credentials, and audit changes in one place
-- 🛠️ **Developer Experience** - Write code in our web IDE or use our API/SDK to integrate with your apps
-- 📦 **Package Freedom** - Use any external dependency with automatic package detection or specify exact versions using `@add-package` annotations
-
-## 🔧 Installation
+### 1. Installation
 
 ```bash
-pip install yepcode_run
+pip install yepcode-run
 ```
 
-## 🔑 Get your YepCode API token
+### 2. Get your YepCode API token
 
-You can get your YepCode API token from the [YepCode Cloud](https://cloud.yepcode.io) platform under `Settings` > `API credentials`.
+1. Sign up to [YepCode Cloud](https://cloud.yepcode.io)
+2. Get your API token from your workspace under: `Settings` > `API credentials`
+3. Use your API token securely in one of these ways:
 
-This token may be provided to the `YepCodeRun`, `YepCodeEnv` or `YepCodeApi` constructor, or set in the `YEPCODE_API_TOKEN` environment variable.
+   ```python
+   # Option 1: Set as environment variable (Recommended)
+   # .env file
+   YEPCODE_API_TOKEN=your_token_here
+   
+   # Option 2: Provide directly to the constructor (Not recommended for production)
+   runner = YepCodeRun(YepCodeApiConfig(api_token='your_token_here'))
+   ```
 
-```env
-YEPCODE_API_TOKEN=your-api-token
-```
-
-## 💻 Usage
-
-### ⚡ Code Execution
-
-The `YepCodeRun` class provides flexible code execution capabilities:
+### 3. Execute your code
 
 ```python
 from yepcode_run import YepCodeRun, YepCodeApiConfig
 
 runner = YepCodeRun(
-    YepCodeApiConfig(api_token='your-api-token')  # We'll try to read it from the YEPCODE_API_TOKEN environment variable
+    YepCodeApiConfig(api_token='your-api-token')
 )
 
 # Execute code with full options
@@ -77,7 +67,7 @@ execution.wait_for_done()
 existing_execution = runner.get_execution('execution-id')
 ```
 
-### 🔐 Environment Variables
+### 4. Manage Environment Variables
 
 You may use environment variables in your code with `process.env` (JavaScript) or `os.getenv` (Python), and you may manage this environment variables in the YepCode platform ([docs here](https://yepcode.io/docs/processes/team-variables)), or using this `YepCodeEnv` class:
 
@@ -100,7 +90,7 @@ variables = env.get_env_vars()
 env.del_env_var('API_KEY')
 ```
 
-### 🌐 Direct API access
+### 5. Direct API access
 
 You can also directly access the full [YepCode API](https://yepcode.io/docs/api) using the `YepCodeApi` class:
 
@@ -115,66 +105,138 @@ api = YepCodeApi(
 processes = api.get_processes()
 ```
 
-## 📚 SDK API Reference
+## SDK API Reference
 
-### ⚡ YepCodeRun
+### YepCodeRun
 
-#### Methods
-
-- `run(code: str, options: Optional[Dict[str, Any]] = None) -> Execution`
-  - `code`: Source code to execute
-  - `options`:
-    - `language`: Programming language ('javascript' or 'python')
-    - `onLog`: Log event handler
-    - `onFinish`: Success completion handler
-    - `onError`: Error handler
-    - `removeOnDone`: Auto-cleanup after execution. If you don't clean up, executions will be available in YepCode Cloud.
-    - `parameters`: Execution parameters (see [docs](https://yepcode.io/docs/processes/input-params) for more information)
-    - `manifest`: Custom process manifest (see [docs](https://yepcode.io/docs/dependencies) for more information)
-
-- `get_execution(execution_id: str) -> Execution`
-  - Retrieves an existing execution by ID
-
-#### `Execution` class properties
-
-- `execution_id: str` - Unique identifier for the execution
-- `logs: List[Log]` - Array of execution logs with timestamps, log levels, and messages
-- `process_id: Optional[str]` - ID of the associated process
-- `status: Optional[ExecutionStatus]` - Current execution status
-- `return_value: Any` - Execution result (if completed successfully)
-- `error: Optional[str]` - Error message (if execution failed)
-- `timeline: Optional[List[TimelineEvent]]` - Execution timeline events
-- `parameters: Any` - Execution input parameters
-- `comment: Optional[str]` - Execution comment
-
-#### `Execution` class methods
-
-- `is_done() -> bool`
-  - Returns whether the execution has completed (successfully or with error)
-
-- `wait_for_done() -> None`
-  - Waits for the execution to complete
-
-- `kill() -> None`
-  - Terminates the execution
-
-- `rerun() -> Execution`
-  - Creates a new execution with the same configuration
-
-### 🔐 YepCodeEnv
+The main class for executing code in YepCode's runtime environment.
 
 #### Methods
 
-- `get_env_vars() -> List[TeamVariable]`
-  - Returns all environment variables
+##### `run(code: str, options: Optional[Dict[str, Any]] = None) -> Execution`
 
-- `set_env_var(key: str, value: str, is_sensitive: Optional[bool] = True) -> None`
-  - Sets an environment variable
-  - `is_sensitive`: Marks variable as sensitive (defaults to True)
+Executes code in YepCode's runtime environment.
 
-- `del_env_var(key: str) -> None`
-  - Deletes an environment variable
+**Parameters:**
+- `code`: Source code to execute (string)
+- `options`: Execution options (optional)
+  ```python
+  {
+      "language": Optional[str],        # 'javascript' or 'python'
+      "onLog": Optional[Callable],      # Log event handler
+      "onFinish": Optional[Callable],   # Success completion handler
+      "onError": Optional[Callable],    # Error handler
+      "removeOnDone": Optional[bool],   # Auto-cleanup after execution
+      "parameters": Optional[Any],      # Execution parameters
+      "manifest": Optional[Dict],       # Custom process manifest
+      "timeout": Optional[int]          # Execution timeout in ms
+  }
+  ```
 
-## 📄 License
+**Returns:** Execution
+
+##### `get_execution(execution_id: str) -> Execution`
+
+Retrieves an existing execution by ID.
+
+**Parameters:**
+- `execution_id`: Unique identifier for the execution
+
+**Returns:** Execution
+
+#### `Execution` class
+
+Represents a code execution instance.
+
+**Properties:**
+```python
+class Execution:
+    execution_id: str                    # Unique identifier
+    logs: List[Log]                      # Array of execution logs
+    process_id: Optional[str]            # ID of the associated process
+    status: Optional[ExecutionStatus]    # Current execution status
+    return_value: Any                    # Execution result
+    error: Optional[str]                 # Error message
+    timeline: Optional[List[TimelineEvent]]  # Execution timeline events
+    parameters: Any                      # Execution input parameters
+    comment: Optional[str]               # Execution comment
+```
+
+**Methods:**
+
+###### `is_done() -> bool`
+Returns whether the execution has completed.
+
+**Returns:** bool
+
+###### `wait_for_done() -> None`
+Waits for the execution to complete.
+
+**Returns:** None
+
+###### `kill() -> None`
+Terminates the execution.
+
+**Returns:** None
+
+###### `rerun() -> Execution`
+Creates a new execution with the same configuration.
+
+**Returns:** Execution
+
+### YepCodeEnv
+
+Manages environment variables for your YepCode workspace.
+
+#### Methods
+
+##### `get_env_vars() -> List[TeamVariable]`
+Returns all environment variables.
+
+**Returns:** List[TeamVariable]
+```python
+class TeamVariable:
+    key: str
+    value: str
+    is_sensitive: bool
+```
+
+##### `set_env_var(key: str, value: str, is_sensitive: bool = True) -> None`
+Sets an environment variable.
+
+**Parameters:**
+- `key`: Variable name
+- `value`: Variable value
+- `is_sensitive`: Whether the variable contains sensitive data (defaults to true)
+
+**Returns:** None
+
+##### `del_env_var(key: str) -> None`
+Deletes an environment variable.
+
+**Parameters:**
+- `key`: Variable name to delete
+
+**Returns:** None
+
+### YepCodeApi
+
+Provides direct access to the YepCode API.
+
+#### Methods
+
+##### `get_processes() -> List[Process]`
+Returns all available processes.
+
+**Returns:** List[Process]
+```python
+class Process:
+    id: str
+    name: str
+    description: Optional[str]
+    created_at: str
+```
+
+## License
 
 All rights reserved by YepCode. This package is part of the YepCode Platform and is subject to the [YepCode Terms of Service](https://yepcode.io/terms-of-use).
