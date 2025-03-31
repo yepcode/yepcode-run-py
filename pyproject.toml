@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "yepcode-run"
-version = "1.0.0"
+version = "1.1.0"
 description = "YepCode Run - A powerful serverless runtime and SDK for executing code in secure sandboxes"
 authors = ["YepCode Developers <developers@yepcode.io>"]
 license = "See LICENSE file"
