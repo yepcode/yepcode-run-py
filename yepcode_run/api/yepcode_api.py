@@ -54,12 +54,24 @@ class YepCodeApi:
 
         if final_config.get("api_token"):
             try:
-                decoded_token = base64.b64decode(final_config["api_token"]).decode()
-                token_data = json.loads(decoded_token)
-                if not token_data.get("clientId") or not token_data.get("clientSecret"):
-                    raise ValueError()
-                final_config["client_id"] = token_data["clientId"]
-                final_config["client_secret"] = token_data["clientSecret"]
+                api_token = final_config["api_token"]
+                if api_token.startswith("sk-"):
+                    decoded_token = base64.b64decode(api_token[3:]).decode()
+                    client_id, client_secret = decoded_token.split(":")
+                    if not client_id or not client_secret:
+                        raise ValueError()
+                    final_config["client_id"] = client_id
+                    final_config["client_secret"] = client_secret
+                else:
+                    # Legacy apiToken format
+                    decoded_token = base64.b64decode(api_token).decode()
+                    token_data = json.loads(decoded_token)
+                    if not token_data.get("clientId") or not token_data.get(
+                        "clientSecret"
+                    ):
+                        raise ValueError()
+                    final_config["client_id"] = token_data["clientId"]
+                    final_config["client_secret"] = token_data["clientSecret"]
             except Exception as e:
                 raise ValueError(
                     f"Invalid apiToken format: {final_config['api_token']}"
