@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+import warnings
 from typing import Optional, Any, List, Dict, Callable
 import time
 
@@ -15,7 +16,14 @@ class Execution:
         events: Dict[str, Callable] = None,
     ):
         self.yepcode_api = yepcode_api
+        self.id = execution_id
+        # self.execution_id is deprecated, use self.id instead
         self.execution_id = execution_id
+        warnings.warn(
+            "The 'execution_id' attribute is deprecated. Use 'id' instead.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         self.events = events or {}
 
         self.is_polling = True
@@ -45,7 +53,7 @@ class Execution:
 
         while True:
             response = self.yepcode_api.get_execution_logs(
-                self.execution_id, {"page": page, "limit": limit}
+                self.id, {"page": page, "limit": limit}
             )
 
             if log_entries := response.get("data"):
@@ -77,7 +85,7 @@ class Execution:
     def _poll(self) -> None:
         self.is_polling = True
         try:
-            execution_data = self.yepcode_api.get_execution(self.execution_id)
+            execution_data = self.yepcode_api.get_execution(self.id)
 
             self.process_id = execution_data.get("processId")
             self.status = ExecutionStatus(execution_data.get("status"))
@@ -154,15 +162,15 @@ class Execution:
 
     def kill(self) -> None:
         try:
-            self.yepcode_api.kill_execution(self.execution_id)
+            self.yepcode_api.kill_execution(self.id)
         except Exception as error:
             if getattr(error, "status", None) == 404:
-                raise ValueError(f"Execution not found for id: {self.execution_id}")
+                raise ValueError(f"Execution not found for id: {self.id}")
             raise error
 
     def rerun(self) -> "Execution":
         try:
-            execution_id = self.yepcode_api.rerun_execution(self.execution_id)
+            execution_id = self.yepcode_api.rerun_execution(self.id)
             return Execution(
                 yepcode_api=self.yepcode_api,
                 execution_id=execution_id,
@@ -170,5 +178,5 @@ class Execution:
             )
         except Exception as error:
             if getattr(error, "status", None) == 404:
-                raise ValueError(f"Execution not found for id: {self.execution_id}")
+                raise ValueError(f"Execution not found for id: {self.id}")
             raise error

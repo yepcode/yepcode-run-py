@@ -32,7 +32,7 @@ pip install yepcode-run
    # Option 1: Set as environment variable (Recommended)
    # .env file
    YEPCODE_API_TOKEN=your_token_here
-   
+
    # Option 2: Provide directly to the constructor (Not recommended for production)
    runner = YepCodeRun(YepCodeApiConfig(api_token='your_token_here'))
    ```
@@ -151,7 +151,7 @@ Represents a code execution instance.
 **Properties:**
 ```python
 class Execution:
-    execution_id: str                    # Unique identifier
+    id: str                    # Unique identifier
     logs: List[Log]                      # Array of execution logs
     process_id: Optional[str]            # ID of the associated process
     status: Optional[ExecutionStatus]    # Current execution status

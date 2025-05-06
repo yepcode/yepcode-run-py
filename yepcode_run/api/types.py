@@ -82,6 +82,7 @@ class TimelineEvent:
 
 @dataclass
 class Execution:
+    id: str
     execution_id: str
     logs: List[Log]
     process_id: Optional[str] = None
