@@ -24,6 +24,12 @@ class YepCodeEnv:
             config = YepCodeApiConfig()
         self._yepcode_api = YepCodeApiManager.get_instance(config)
 
+    def get_client_id(self) -> str:
+        return self._yepcode_api.get_client_id()
+
+    def get_team_id(self) -> str:
+        return self._yepcode_api.get_team_id()
+
     def _get_variable(self, key: str) -> Optional[TeamVariable]:
         """
         Get a specific environment variable by key.

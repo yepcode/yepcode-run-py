@@ -86,6 +86,16 @@ class YepCodeApi:
         self.timeout = final_config.get("timeout")
         self._init_team_id_by_access_token()
 
+    def get_client_id(self) -> str:
+        if not self.client_id:
+            raise ValueError("Client ID is not set")
+        return self.client_id
+
+    def get_team_id(self) -> str:
+        if not self.team_id:
+            raise ValueError("Team ID is not set")
+        return self.team_id
+
     def _init_team_id_by_access_token(self) -> None:
         if not self.access_token:
             return

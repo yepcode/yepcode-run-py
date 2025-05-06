@@ -14,6 +14,12 @@ class YepCodeRun:
         self.yepcode_api = YepCodeApiManager.get_instance(config)
         self.PROCESS_NAME_PREFIX = "yepcode-run-"
 
+    def get_client_id(self) -> str:
+        return self._yepcode_api.get_client_id()
+
+    def get_team_id(self) -> str:
+        return self._yepcode_api.get_team_id()
+
     def _get_process_slug(self, hash_value: str) -> str:
         """Generate a process slug from a hash value."""
         return f"{self.PROCESS_NAME_PREFIX}{hash_value}"
