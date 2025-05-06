@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 from enum import Enum
 from datetime import datetime
 
@@ -32,13 +32,38 @@ class YepCodeApiConfig:
 
 @dataclass
 class ProcessWebhook:
-    url: str
-    secret: Optional[str] = None
+    enabled: Optional[bool] = None
+    username: Optional[str] = None
+    password: Optional[str] = None
+
+
+@dataclass
+class ProcessFormsConfig:
+    enabled: Optional[bool] = None
+
+
+@dataclass
+class ProcessPublicationConfig:
+    enabled: Optional[bool] = None
+    token: Optional[str] = None
+
+
+@dataclass
+class DependenciesConfig:
+    scoped_to_process: Optional[bool] = None
+    auto_detect: Optional[bool] = None
 
 
 @dataclass
 class ProcessSettings:
-    dependencies: Dict[str, Any]
+    forms_config: Optional[ProcessFormsConfig] = None
+    public_config: Optional[ProcessPublicationConfig] = None
+    dependencies: Optional[DependenciesConfig] = None
+
+
+@dataclass
+class ProcessManifest:
+    dependencies: Optional[Dict[str, str]] = None
 
 
 @dataclass
@@ -48,7 +73,7 @@ class Process:
     slug: str
     description: Optional[str] = None
     readme: Optional[str] = None
-    manifest: Optional[Dict[str, Any]] = None
+    manifest: Optional[ProcessManifest] = None
     created_by: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_by: Optional[str] = None
@@ -69,11 +94,6 @@ class Log:
 
 
 @dataclass
-class ExecutionError:
-    message: Optional[str] = None
-
-
-@dataclass
 class TimelineEvent:
     status: ExecutionStatus
     timestamp: str
@@ -81,17 +101,39 @@ class TimelineEvent:
 
 
 @dataclass
+class ExecutionTimeline:
+    explanation: Optional[str] = None
+    events: Optional[List[TimelineEvent]] = None
+
+
+@dataclass
+class ExecutionSettings:
+    timeout: Optional[int] = None
+    agent_pool_slug: Optional[str] = None
+
+
+@dataclass
 class Execution:
     id: str
-    execution_id: str
-    logs: List[Log]
-    process_id: Optional[str] = None
-    status: Optional[ExecutionStatus] = None
-    return_value: Optional[Any] = None
-    error: Optional[str] = None
-    timeline: Optional[List[TimelineEvent]] = None
-    parameters: Optional[Dict[str, Any]] = None
+    process_id: str
+    status: ExecutionStatus
+    execution_id: Optional[str] = None
+    scheduled_id: Optional[str] = None
+    timeline: Optional[ExecutionTimeline] = None
+    parameters: Optional[Dict[str, Dict[str, Any]]] = None
     comment: Optional[str] = None
+    return_value: Optional[Any] = None
+    settings: Optional[ExecutionSettings] = None
+    created_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+    error: Optional[str] = None
+
+
+@dataclass
+class ExecutionId:
+    execution_id: str
 
 
 @dataclass
@@ -120,12 +162,6 @@ class CreateTeamVariableInput:
 
 
 @dataclass
-class DependenciesConfig:
-    scoped_to_process: Optional[bool] = None
-    auto_detect: Optional[bool] = None
-
-
-@dataclass
 class DependenciesConfigInput:
     scoped_to_process: Optional[bool] = None
     auto_detect: Optional[bool] = None
@@ -151,24 +187,8 @@ class FormsConfigInput:
 
 
 @dataclass
-class ProcessFormsConfig:
-    enabled: Optional[bool] = None
-
-
-@dataclass
-class ProcessManifest:
-    dependencies: Optional[Dict[str, str]] = None
-
-
-@dataclass
 class ProcessManifestInput:
     dependencies: Optional[Dict[str, str]] = None
-
-
-@dataclass
-class ProcessPublicationConfig:
-    enabled: Optional[bool] = None
-    token: Optional[str] = None
 
 
 @dataclass
@@ -216,6 +236,14 @@ class TeamVariable:
     is_sensitive: Optional[bool] = None
     created_by: Optional[str] = None
     created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+@dataclass
+class UpdateTeamVariableInput:
+    key: str
+    value: Optional[str] = None
 
 
 @dataclass
@@ -249,3 +277,166 @@ class SettingsInput:
     forms_config: Optional[FormsConfigInput] = None
     public_config: Optional[PublicationConfigInput] = None
     dependencies: Optional[DependenciesConfigInput] = None
+
+
+# Pagination result types
+@dataclass
+class PaginatedResult:
+    has_next_page: Optional[bool] = None
+    page: Optional[int] = None
+    limit: Optional[int] = None
+    total: Optional[int] = None
+
+
+@dataclass
+class ProcessesPaginatedResult(PaginatedResult):
+    data: Optional[List[Process]] = None
+
+
+@dataclass
+class ExecutionsPaginatedResult(PaginatedResult):
+    data: Optional[List[Execution]] = None
+
+
+@dataclass
+class ExecutionLogsPaginatedResult(PaginatedResult):
+    data: Optional[List[Log]] = None
+
+
+@dataclass
+class SchedulesPaginatedResult(PaginatedResult):
+    data: Optional[List[Schedule]] = None
+
+
+@dataclass
+class TeamVariablesPaginatedResult(PaginatedResult):
+    data: Optional[List[TeamVariable]] = None
+
+
+# Versioned process types
+@dataclass
+class VersionedProcess:
+    id: str
+    programming_language: ProgrammingLanguage
+    source_code: str
+    parameters_schema: str
+    readme: str
+    comment: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+@dataclass
+class PublishProcessInput:
+    tag: str
+    comment: Optional[str] = None
+
+
+@dataclass
+class VersionedProcessesPaginatedResult(PaginatedResult):
+    data: Optional[List[VersionedProcess]] = None
+
+
+@dataclass
+class VersionedProcessAlias:
+    id: str
+    name: str
+    version_id: str
+    created_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+@dataclass
+class VersionedProcessAliasInput:
+    name: str
+    version_id: str
+
+
+@dataclass
+class VersionedProcessAliasesPaginatedResult(PaginatedResult):
+    data: Optional[List[VersionedProcessAlias]] = None
+
+
+# Module types
+@dataclass
+class Module:
+    id: str
+    name: str
+    programming_language: Optional[ProgrammingLanguage] = None
+    source_code: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+@dataclass
+class CreateModuleScriptInput:
+    programming_language: Optional[str] = None
+    source_code: Optional[str] = None
+
+
+@dataclass
+class CreateModuleInput:
+    name: str
+    script: Optional[CreateModuleScriptInput] = None
+
+
+@dataclass
+class UpdateModuleInput:
+    name: Optional[str] = None
+    script: Optional[CreateModuleScriptInput] = None
+
+
+@dataclass
+class ModulesPaginatedResult(PaginatedResult):
+    data: Optional[List[Module]] = None
+
+
+@dataclass
+class VersionedModule:
+    id: str
+    programming_language: ProgrammingLanguage
+    source_code: str
+    comment: Optional[str] = None
+    created_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+@dataclass
+class PublishModuleInput:
+    tag: str
+    comment: Optional[str] = None
+
+
+@dataclass
+class VersionedModulesPaginatedResult(PaginatedResult):
+    data: Optional[List[VersionedModule]] = None
+
+
+@dataclass
+class VersionedModuleAlias:
+    id: str
+    name: str
+    version_id: str
+    created_by: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_by: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+
+@dataclass
+class VersionedModuleAliasInput:
+    name: str
+    version_id: str
+
+
+@dataclass
+class VersionedModuleAliasesPaginatedResult(PaginatedResult):
+    data: Optional[List[VersionedModuleAlias]] = None

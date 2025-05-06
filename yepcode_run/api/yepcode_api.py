@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List, Union, Tuple
 from datetime import datetime
 import requests
 from urllib.parse import urljoin
@@ -9,9 +9,35 @@ from .types import (
     YepCodeApiConfig,
     Process,
     Execution,
-    ExecutionStatus,
+    ExecutionId,
+    ExecutionsPaginatedResult,
+    ExecutionLogsPaginatedResult,
+    ProcessesPaginatedResult,
     Schedule,
+    SchedulesPaginatedResult,
     TeamVariable,
+    TeamVariablesPaginatedResult,
+    VersionedProcess,
+    VersionedProcessesPaginatedResult,
+    VersionedProcessAlias,
+    VersionedProcessAliasesPaginatedResult,
+    Module,
+    ModulesPaginatedResult,
+    VersionedModule,
+    VersionedModulesPaginatedResult,
+    VersionedModuleAlias,
+    VersionedModuleAliasesPaginatedResult,
+    CreateProcessInput,
+    UpdateProcessInput,
+    CreateTeamVariableInput,
+    UpdateTeamVariableInput,
+    CreateModuleInput,
+    UpdateModuleInput,
+    PublishProcessInput,
+    PublishModuleInput,
+    VersionedProcessAliasInput,
+    VersionedModuleAliasInput,
+    ScheduledProcessInput,
 )
 
 
@@ -145,7 +171,7 @@ class YepCodeApi:
             raise ValueError(f"Authentication failed: {str(error)}")
 
     def _request(
-        self, method: str, endpoint: str, options: Dict[str, Any] = None
+        self, method: str, endpoint: str, options: Optional[Dict[str, Any]] = None
     ) -> Any:
         if options is None:
             options = {}
@@ -194,13 +220,29 @@ class YepCodeApi:
         except ValueError:
             return response.text
 
-    def create_process(self, data: Dict[str, Any]) -> Process:
+    @staticmethod
+    def _sanitize_date_param(date: Union[datetime, str, None]) -> Optional[str]:
+        if not date:
+            return None
+        if isinstance(date, datetime):
+            return date.isoformat().split(".")[0]
+        if isinstance(date, str) and not date.match(
+            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"
+        ):
+            raise ValueError(
+                "Invalid date format. It must be a valid ISO 8601 date (ie: 2025-01-01T00:00:00)"
+            )
+        return date
+
+    def create_process(self, data: CreateProcessInput) -> Process:
         return self._request("POST", "/processes", {"data": data})
 
     def get_process(self, id: str) -> Process:
         return self._request("GET", f"/processes/{id}")
 
-    def update_process(self, process_identifier: str, data: Dict[str, Any]) -> Process:
+    def update_process(
+        self, process_identifier: str, data: UpdateProcessInput
+    ) -> Process:
         return self._request(
             "PATCH", f"/processes/{process_identifier}", {"data": data}
         )
@@ -208,15 +250,43 @@ class YepCodeApi:
     def delete_process(self, process_identifier: str) -> None:
         self._request("DELETE", f"/processes/{process_identifier}")
 
-    def get_processes(self, params: Dict[str, Any] = None) -> Dict[str, Any]:
+    def get_process_versions(
+        self, process_id: str, params: Optional[Dict[str, Any]] = None
+    ) -> VersionedProcessesPaginatedResult:
+        return self._request(
+            "GET", f"/processes/{process_id}/versions", {"params": params or {}}
+        )
+
+    def publish_process_version(
+        self, process_id: str, data: PublishProcessInput
+    ) -> VersionedProcess:
+        return self._request(
+            "POST", f"/processes/{process_id}/versions", {"data": data}
+        )
+
+    def get_process_version_aliases(
+        self, process_id: str, params: Optional[Dict[str, Any]] = None
+    ) -> VersionedProcessAliasesPaginatedResult:
+        return self._request(
+            "GET", f"/processes/{process_id}/aliases", {"params": params or {}}
+        )
+
+    def create_process_version_alias(
+        self, process_id: str, data: VersionedProcessAliasInput
+    ) -> VersionedProcessAlias:
+        return self._request("POST", f"/processes/{process_id}/aliases", {"data": data})
+
+    def get_processes(
+        self, params: Optional[Dict[str, Any]] = None
+    ) -> ProcessesPaginatedResult:
         return self._request("GET", "/processes", {"params": params or {}})
 
     def execute_process_async(
         self,
         process_id_or_slug: str,
-        parameters: Dict[str, Any] = None,
-        options: Dict[str, Any] = None,
-    ) -> Dict[str, str]:
+        parameters: Optional[Dict[str, Any]] = None,
+        options: Optional[Dict[str, Any]] = None,
+    ) -> ExecutionId:
         headers = {}
         if options and options.get("initiatedBy"):
             headers["Yep-Initiated-By"] = options["initiatedBy"]
@@ -237,8 +307,8 @@ class YepCodeApi:
     def execute_process_sync(
         self,
         process_id_or_slug: str,
-        parameters: Dict[str, Any] = None,
-        options: Dict[str, Any] = None,
+        parameters: Optional[Dict[str, Any]] = None,
+        options: Optional[Dict[str, Any]] = None,
     ) -> Any:
         headers = {}
         if options and options.get("initiatedBy"):
@@ -257,21 +327,16 @@ class YepCodeApi:
             {"data": data, "headers": headers},
         )
 
-    @staticmethod
-    def _sanitize_date_param(date: Union[datetime, str, None]) -> Optional[str]:
-        if not date:
-            return None
-        if isinstance(date, datetime):
-            return date.isoformat().split(".")[0]
-        if isinstance(date, str) and not date.match(
-            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"
-        ):
-            raise ValueError(
-                "Invalid date format. It must be a valid ISO 8601 date (ie: 2025-01-01T00:00:00)"
-            )
-        return date
+    def create_schedule(
+        self, process_id_or_slug: str, data: ScheduledProcessInput
+    ) -> Schedule:
+        return self._request(
+            "POST", f"/processes/{process_id_or_slug}/schedule", {"data": data}
+        )
 
-    def get_executions(self, params: Dict[str, Any] = None) -> Dict[str, Any]:
+    def get_executions(
+        self, params: Optional[Dict[str, Any]] = None
+    ) -> ExecutionsPaginatedResult:
         if params:
             sanitized_params = {
                 **params,
@@ -286,8 +351,8 @@ class YepCodeApi:
         return self._request("GET", f"/executions/{id}")
 
     def get_execution_logs(
-        self, id: str, params: Dict[str, Any] = None
-    ) -> Dict[str, Any]:
+        self, id: str, params: Optional[Dict[str, Any]] = None
+    ) -> ExecutionLogsPaginatedResult:
         return self._request("GET", f"/executions/{id}/logs", {"params": params or {}})
 
     def rerun_execution(self, id: str) -> str:
@@ -297,7 +362,9 @@ class YepCodeApi:
     def kill_execution(self, id: str) -> None:
         self._request("PUT", f"/executions/{id}/kill")
 
-    def get_schedules(self, params: Dict[str, Any] = None) -> Dict[str, Any]:
+    def get_schedules(
+        self, params: Optional[Dict[str, Any]] = None
+    ) -> SchedulesPaginatedResult:
         return self._request("GET", "/schedules", {"params": params or {}})
 
     def get_schedule(self, id: str) -> Schedule:
@@ -312,14 +379,57 @@ class YepCodeApi:
     def resume_schedule(self, id: str) -> None:
         self._request("PUT", f"/schedules/{id}/resume")
 
-    def get_variables(self, params: Dict[str, Any] = None) -> Dict[str, Any]:
+    def get_variables(
+        self, params: Optional[Dict[str, Any]] = None
+    ) -> TeamVariablesPaginatedResult:
         return self._request("GET", "/variables", {"params": params or {}})
 
-    def create_variable(self, data: Dict[str, Any]) -> TeamVariable:
+    def create_variable(self, data: CreateTeamVariableInput) -> TeamVariable:
         return self._request("POST", "/variables", {"data": data})
 
-    def update_variable(self, id: str, data: Dict[str, Any]) -> TeamVariable:
+    def update_variable(self, id: str, data: UpdateTeamVariableInput) -> TeamVariable:
         return self._request("PATCH", f"/variables/{id}", {"data": data})
 
     def delete_variable(self, id: str) -> None:
         self._request("DELETE", f"/variables/{id}")
+
+    def get_modules(
+        self, params: Optional[Dict[str, Any]] = None
+    ) -> ModulesPaginatedResult:
+        return self._request("GET", "/modules", {"params": params or {}})
+
+    def create_module(self, data: CreateModuleInput) -> Module:
+        return self._request("POST", "/modules", {"data": data})
+
+    def get_module(self, id: str) -> Module:
+        return self._request("GET", f"/modules/{id}")
+
+    def update_module(self, id: str, data: UpdateModuleInput) -> Module:
+        return self._request("PATCH", f"/modules/{id}", {"data": data})
+
+    def delete_module(self, id: str) -> None:
+        self._request("DELETE", f"/modules/{id}")
+
+    def get_module_versions(
+        self, module_id: str, params: Optional[Dict[str, Any]] = None
+    ) -> VersionedModulesPaginatedResult:
+        return self._request(
+            "GET", f"/modules/{module_id}/versions", {"params": params or {}}
+        )
+
+    def publish_module_version(
+        self, module_id: str, data: PublishModuleInput
+    ) -> VersionedModule:
+        return self._request("POST", f"/modules/{module_id}/versions", {"data": data})
+
+    def get_module_version_aliases(
+        self, module_id: str, params: Optional[Dict[str, Any]] = None
+    ) -> VersionedModuleAliasesPaginatedResult:
+        return self._request(
+            "GET", f"/modules/{module_id}/aliases", {"params": params or {}}
+        )
+
+    def create_module_version_alias(
+        self, module_id: str, data: VersionedModuleAliasInput
+    ) -> VersionedModuleAlias:
+        return self._request("POST", f"/modules/{module_id}/aliases", {"data": data})
