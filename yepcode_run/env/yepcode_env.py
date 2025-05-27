@@ -24,9 +24,6 @@ class YepCodeEnv:
             config = YepCodeApiConfig()
         self._yepcode_api = YepCodeApiManager.get_instance(config)
 
-    def get_client_id(self) -> str:
-        return self._yepcode_api.get_client_id()
-
     def get_team_id(self) -> str:
         return self._yepcode_api.get_team_id()
 

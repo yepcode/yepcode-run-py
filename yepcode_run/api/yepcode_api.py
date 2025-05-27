@@ -1,5 +1,6 @@
 import base64
 import json
+import re
 from typing import Optional, Dict, Any, List, Union, Tuple
 from datetime import datetime
 import requests
@@ -110,43 +111,30 @@ class YepCodeApi:
         self.team_id = final_config.get("team_id")
         self.access_token = final_config.get("access_token")
         self.timeout = final_config.get("timeout")
-        if not self.client_id and self.access_token:
-            self.client_id = self._client_id_from_access_token()
-        if not self.team_id and self.client_id:
-            self.team_id = self._team_id_from_client_id()
-
-    def get_client_id(self) -> str:
-        if not self.client_id:
-            raise ValueError("Client ID is not set")
-        return self.client_id
+        self._init_team_id()
 
     def get_team_id(self) -> str:
         if not self.team_id:
             raise ValueError("Team ID is not set")
         return self.team_id
 
-    def _client_id_from_access_token(self) -> str:
-        if not self.access_token:
-            raise ValueError("Access token is not set")
-        try:
+    def _init_team_id(self) -> None:
+        if self.client_id:
+            match = re.match(r"^sa-(.*)-[a-z0-9]{8}$", self.client_id)
+            if match:
+                self.team_id = match[1]
+        if not self.team_id and self.access_token:
             payload = self.access_token.split(".")[1]
             payload += "=" * ((4 - len(payload) % 4) % 4)
             decoded_payload = json.loads(base64.b64decode(payload).decode())
-            return decoded_payload["client_id"]
-        except Exception as e:
-            raise ValueError(f"Failed to extract client_id from access token: {e}")
-
-    def _team_id_from_client_id(self) -> str:
-        if not self.client_id:
-            raise ValueError("Client ID is not set")
-        import re
-
-        match = re.match(r"^sa-(.*)-[a-z0-9]{8}$", self.client_id)
-        if not match:
-            raise ValueError(
-                "Client ID is not valid. It must be in the format sa-<teamId>-<8randomCharsOrDigits>"
+            self.team_id = (
+                decoded_payload.get("groups")
+                and decoded_payload.get("groups").filter(
+                    lambda group: group != "sandbox"
+                )[0]
             )
-        return match.group(1)
+        if not self.team_id:
+            raise ValueError("Team ID is not set")
 
     def _get_base_url(self) -> str:
         return f"{self.api_host}/api/{self.team_id}/rest"

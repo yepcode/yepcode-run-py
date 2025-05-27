@@ -14,9 +14,6 @@ class YepCodeRun:
         self.yepcode_api = YepCodeApiManager.get_instance(config)
         self.PROCESS_NAME_PREFIX = "yepcode-run-"
 
-    def get_client_id(self) -> str:
-        return self._yepcode_api.get_client_id()
-
     def get_team_id(self) -> str:
         return self._yepcode_api.get_team_id()
 
