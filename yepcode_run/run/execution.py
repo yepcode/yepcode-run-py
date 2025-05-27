@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-import warnings
 from typing import Optional, Any, List, Dict, Callable
 import time
 
@@ -17,13 +16,6 @@ class Execution:
     ):
         self.yepcode_api = yepcode_api
         self.id = execution_id
-        # self.execution_id is deprecated, use self.id instead
-        self.execution_id = execution_id
-        warnings.warn(
-            "The 'execution_id' attribute is deprecated. Use 'id' instead.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
         self.events = events or {}
 
         self.is_polling = True

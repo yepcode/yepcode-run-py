@@ -117,7 +117,6 @@ class Execution:
     id: str
     process_id: str
     status: ExecutionStatus
-    execution_id: Optional[str] = None
     scheduled_id: Optional[str] = None
     timeline: Optional[ExecutionTimeline] = None
     parameters: Optional[Dict[str, Dict[str, Any]]] = None
