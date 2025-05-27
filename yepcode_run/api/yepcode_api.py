@@ -110,7 +110,10 @@ class YepCodeApi:
         self.team_id = final_config.get("team_id")
         self.access_token = final_config.get("access_token")
         self.timeout = final_config.get("timeout")
-        self._init_team_id_by_access_token()
+        if not self.client_id and self.access_token:
+            self.client_id = self._client_id_from_access_token()
+        if not self.team_id and self.client_id:
+            self.team_id = self._team_id_from_client_id()
 
     def get_client_id(self) -> str:
         if not self.client_id:
@@ -122,20 +125,28 @@ class YepCodeApi:
             raise ValueError("Team ID is not set")
         return self.team_id
 
-    def _init_team_id_by_access_token(self) -> None:
+    def _client_id_from_access_token(self) -> str:
         if not self.access_token:
-            return
+            raise ValueError("Access token is not set")
+        try:
+            payload = self.access_token.split(".")[1]
+            payload += "=" * ((4 - len(payload) % 4) % 4)
+            decoded_payload = json.loads(base64.b64decode(payload).decode())
+            return decoded_payload["client_id"]
+        except Exception as e:
+            raise ValueError(f"Failed to extract client_id from access token: {e}")
 
-        payload = self.access_token.split(".")[1]
-        # Add padding if necessary
-        payload += "=" * ((4 - len(payload) % 4) % 4)
-        decoded_payload = json.loads(base64.b64decode(payload).decode())
+    def _team_id_from_client_id(self) -> str:
+        if not self.client_id:
+            raise ValueError("Client ID is not set")
+        import re
 
-        if groups := decoded_payload.get("groups"):
-            self.team_id = next((group for group in groups if group != "sandbox"), None)
-
-        if not self.team_id:
-            raise ValueError("No teamId found in the access token")
+        match = re.match(r"^sa-(.*)-[a-z0-9]{8}$", self.client_id)
+        if not match:
+            raise ValueError(
+                "Client ID is not valid. It must be in the format sa-<teamId>-<8randomCharsOrDigits>"
+            )
+        return match.group(1)
 
     def _get_base_url(self) -> str:
         return f"{self.api_host}/api/{self.team_id}/rest"
@@ -164,7 +175,6 @@ class YepCodeApi:
             if not self.access_token:
                 raise ValueError("No access token received from server")
 
-            self._init_team_id_by_access_token()
             return self.access_token
 
         except Exception as error:
