@@ -48,6 +48,7 @@ class YepCodeRun:
                     "programmingLanguage": language.upper(),
                     "sourceCode": code,
                 },
+                "tags": ["yc-run"],
                 **(
                     {"manifest": manifest}
                     if manifest
