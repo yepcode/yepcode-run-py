@@ -4,6 +4,7 @@ from typing import Optional, Dict, Any, List, Union, Tuple
 from datetime import datetime
 import requests
 from urllib.parse import urljoin
+import mimetypes
 
 from .types import (
     YepCodeApiConfig,
@@ -38,6 +39,8 @@ from .types import (
     VersionedProcessAliasInput,
     VersionedModuleAliasInput,
     ScheduledProcessInput,
+    CreateStorageObjectInput,
+    StorageObject,
 )
 
 
@@ -443,3 +446,66 @@ class YepCodeApi:
         self, module_id: str, data: VersionedModuleAliasInput
     ) -> VersionedModuleAlias:
         return self._request("POST", f"/modules/{module_id}/aliases", {"data": data})
+
+    def get_objects(self) -> List[StorageObject]:
+        response = self._request("GET", "/storage/objects")
+        return [StorageObject.from_dict(obj) for obj in response]
+
+    def get_object(self, name: str) -> requests.Response:
+        if not self.access_token:
+            self._get_access_token()
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+        }
+        endpoint = f"/storage/objects/{name}"
+        url = urljoin(f"{self._get_base_url()}/", endpoint.lstrip("/"))
+        response = requests.get(url, headers=headers, stream=True, timeout=self.timeout / 1000)
+        response.raise_for_status()
+        return response
+
+    def create_object(self, data: CreateStorageObjectInput) -> StorageObject:
+        if not data.file:
+            raise ValueError("File or stream is required")
+        if not self.access_token:
+            self._get_access_token()
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+        }
+        endpoint = f"/storage/objects?name={requests.utils.quote(data.name)}"
+        url = urljoin(f"{self._get_base_url()}/", endpoint.lstrip("/"))
+        # Detect content type
+        content_type, _ = mimetypes.guess_type(data.name)
+        files = {"file": (data.name, data.file, content_type or "application/octet-stream")}
+        response = requests.post(url, headers=headers, files=files, timeout=self.timeout / 1000)
+        if not response.ok:
+            try:
+                error_response = response.json()
+                message = error_response.get("message", response.reason)
+            except ValueError:
+                message = response.reason
+            raise YepCodeApiError(
+                f"HTTP error {response.status_code} in endpoint POST {endpoint}: {message}",
+                response.status_code,
+            )
+        return StorageObject.from_dict(response.json())
+
+    def delete_object(self, name: str) -> None:
+        if not self.access_token:
+            self._get_access_token()
+        headers = {
+            "Authorization": f"Bearer {self.access_token}",
+        }
+        endpoint = f"/storage/objects/{requests.utils.quote(name)}"
+        url = urljoin(f"{self._get_base_url()}/", endpoint.lstrip("/"))
+        response = requests.delete(url, headers=headers, timeout=self.timeout / 1000)
+        if not response.ok:
+            try:
+                error_response = response.json()
+                message = error_response.get("message", response.reason)
+            except ValueError:
+                message = response.reason
+            raise YepCodeApiError(
+                f"HTTP error {response.status_code} in endpoint DELETE {endpoint}: {message}",
+                response.status_code,
+            )
+        return None

@@ -439,3 +439,33 @@ class VersionedModuleAliasInput:
 @dataclass
 class VersionedModuleAliasesPaginatedResult(PaginatedResult):
     data: Optional[List[VersionedModuleAlias]] = None
+
+
+# Storage types
+@dataclass
+class StorageObject:
+    name: str
+    size: int
+    md5_hash: str
+    content_type: str
+    created_at: str
+    updated_at: str
+    link: str
+
+    @staticmethod
+    def from_dict(data: dict) -> "StorageObject":
+        return StorageObject(
+            name=data["name"],
+            size=data["size"],
+            md5_hash=data.get("md5Hash", data.get("md5_hash")),
+            content_type=data.get("contentType", data.get("content_type")),
+            created_at=data.get("createdAt", data.get("created_at")),
+            updated_at=data.get("updatedAt", data.get("updated_at")),
+            link=str(data.get("link")),
+        )
+
+
+@dataclass
+class CreateStorageObjectInput:
+    name: str
+    file: Any
