@@ -105,6 +105,36 @@ api = YepCodeApi(
 processes = api.get_processes()
 ```
 
+### 6. YepCode Storage
+
+You can manage files in your YepCode workspace using the `YepCodeStorage` class. This allows you to upload, list, download, and delete files easily.
+
+```python
+from yepcode_run import YepCodeStorage, YepCodeApiConfig
+
+storage = YepCodeStorage(
+    YepCodeApiConfig(api_token='your-api-token')
+)
+
+# Upload a file
+with open('myfile.txt', 'rb') as f:
+    obj = storage.upload('myfile.txt', f)
+    print('Uploaded:', obj.name, obj.size, obj.link)
+
+# List all storage objects
+objects = storage.list()
+for obj in objects:
+    print(obj.name, obj.size, obj.link)
+
+# Download a file
+content = storage.download('myfile.txt')
+with open('downloaded.txt', 'wb') as f:
+    f.write(content)
+
+# Delete a file
+storage.delete('myfile.txt')
+```
+
 ## SDK API Reference
 
 ### YepCodeRun
@@ -235,6 +265,59 @@ class Process:
     name: str
     description: Optional[str]
     created_at: str
+```
+
+### YepCodeStorage
+
+The main class for managing files in YepCode's cloud storage.
+
+#### Methods
+
+##### `upload(name: str, file: bytes) -> StorageObject`
+Uploads a file to YepCode storage.
+
+**Parameters:**
+- `name`: Name of the file in storage
+- `file`: File content as bytes or a file-like object
+
+**Returns:** StorageObject
+
+##### `download(name: str) -> bytes`
+Downloads a file from YepCode storage.
+
+**Parameters:**
+- `name`: Name of the file to download
+
+**Returns:** File content as bytes
+
+##### `delete(name: str) -> None`
+Deletes a file from YepCode storage.
+
+**Parameters:**
+- `name`: Name of the file to delete
+
+**Returns:** None
+
+##### `list() -> List[StorageObject]`
+Lists all files in YepCode storage.
+
+**Returns:** List of StorageObject
+
+#### Types
+
+```python
+class StorageObject:
+    name: str           # File name
+    size: int           # File size in bytes
+    md5_hash: str       # MD5 hash of the file
+    content_type: str   # MIME type
+    created_at: str     # Creation timestamp (ISO8601)
+    updated_at: str     # Last update timestamp (ISO8601)
+    link: str           # Download link
+
+class CreateStorageObjectInput:
+    name: str           # File name
+    file: Any           # File content (bytes or file-like)
 ```
 
 ## License
