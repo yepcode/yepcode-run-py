@@ -13,7 +13,7 @@ from .api.types import (
 )
 from .utils.language_detector import LanguageDetector
 
-__version__ = "1.3.1"
+__version__ = "1.4.0"
 
 __all__ = [
     "YepCodeRun",
