@@ -1,7 +1,7 @@
 import base64
 import json
 from typing import Optional, Dict, Any, List, Union, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 from urllib.parse import urljoin
 import mimetypes
@@ -155,6 +155,10 @@ class YepCodeApi:
         return f"{self.api_host}/api/{self.team_id}/rest"
 
     def _get_access_token(self) -> str:
+        if not self.client_id or not self.client_secret:
+            raise ValueError(
+                "AccessToken has expired. Provide a new one or enable automatic refreshing by providing an apiToken or clientId and clientSecret."
+            )
         try:
             auth_str = base64.b64encode(
                 f"{self.client_id}:{self.client_secret}".encode()
@@ -183,13 +187,29 @@ class YepCodeApi:
         except Exception as error:
             raise ValueError(f"Authentication failed: {str(error)}")
 
+    def _is_access_token_expired(self, access_token: str) -> bool:
+        token_payload = access_token.split(".")[1]
+        if not token_payload:
+            return True
+
+        try:
+            token_payload += "=" * ((4 - len(token_payload) % 4) % 4)
+            decoded_token_payload = json.loads(base64.b64decode(token_payload).decode())
+            expiration_time = decoded_token_payload["exp"]
+            return (
+                expiration_time is not None
+                and expiration_time < datetime.now(timezone.utc).timestamp()
+            )
+        except Exception as e:
+            return True
+
     def _request(
         self, method: str, endpoint: str, options: Optional[Dict[str, Any]] = None
     ) -> Any:
         if options is None:
             options = {}
 
-        if not self.access_token:
+        if not self.access_token or self._is_access_token_expired(self.access_token):
             self._get_access_token()
 
         headers = {
