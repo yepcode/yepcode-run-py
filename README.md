@@ -135,6 +135,63 @@ with open('downloaded.txt', 'wb') as f:
 storage.delete('myfile.txt')
 ```
 
+## Prompt to use if you are asking LLM to write code
+
+You can use the following prompt to ask LLM to write code that the YepCode Run SDK can execute.
+
+You should replace the `{{task}}` and `{{envVars}}` placeholders with the actual task and environment variables names already set in your YepCode workspace.
+
+```text
+Acts as a coding agent to help the user to achieve the described task generating a standalone script in either JavaScript or Python. Do not write any explainations, just write the code.
+
+The task to solve is:
+
+=====
+{{task}}
+=====
+
+* We support JavaScript (NodeJS v22) or Python (v3.13).
+* You may use the following environment variables already set in the execution context: {{envVars}}
+* Use external dependencies freely from NPM or PyPI. You should import them as usually.
+  * If package name is different from the import sentence, add an anotation for us to detect them (\`// @add-package package_name\` (javascript) or \`# @add-package package_name\` (python)).
+  * When possible, use binary packages to avoid compilation issues.
+* Include debugging logs (\`console.log()\` in javascript or \`print()\` in python) if necessary for execution tracking and error debugging.
+* Do not catch errors, let them fail the execution.
+* Follow the required script structure based on the chosen language:
+
+---------------------------------
+JavaScript
+----------
+// @add-package package_name_1
+const package_name_1 = require("package_name_1");
+// @add-package package_name_2
+const package_name_2 = require("package_name_2");
+
+async function main() {
+    // The generated code should go here
+    return {"success": true, "data": result}
+}
+
+module.exports = { main }
+---------------------------------
+
+---------------------------------
+Python
+------
+# @add-package package_name_1
+import package_name_1
+# @add-package package_name_2
+from package_name_2.module import Module
+
+def main():
+    # The generated code should go here
+    return {"success": True, "data": result}
+
+---------------------------------
+
+Important: The response should only contain the script to be executed by `python` or `node` and follow the exact structure above. Do not include any explanations neither enclosing annotations.
+```
+
 ## SDK API Reference
 
 ### YepCodeRun
