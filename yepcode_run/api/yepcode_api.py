@@ -1,10 +1,11 @@
 import base64
 import json
-from typing import Optional, Dict, Any, List, Union, Tuple
+from typing import Optional, Dict, Any, List, Union
 from datetime import datetime, timezone
 import requests
 from urllib.parse import urljoin
 import mimetypes
+import re
 
 from .types import (
     YepCodeApiConfig,
@@ -142,7 +143,6 @@ class YepCodeApi:
     def _team_id_from_client_id(self) -> str:
         if not self.client_id:
             raise ValueError("Client ID is not set")
-        import re
 
         match = re.match(r"^sa-(.*)-[a-z0-9]{8}$", self.client_id)
         if not match:
@@ -259,8 +259,8 @@ class YepCodeApi:
             return None
         if isinstance(date, datetime):
             return date.isoformat().split(".")[0]
-        if isinstance(date, str) and not date.match(
-            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"
+        if isinstance(date, str) and not re.match(
+            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$", date
         ):
             raise ValueError(
                 "Invalid date format. It must be a valid ISO 8601 date (ie: 2025-01-01T00:00:00)"
@@ -479,7 +479,9 @@ class YepCodeApi:
         }
         endpoint = f"/storage/objects/{name}"
         url = urljoin(f"{self._get_base_url()}/", endpoint.lstrip("/"))
-        response = requests.get(url, headers=headers, stream=True, timeout=self.timeout / 1000)
+        response = requests.get(
+            url, headers=headers, stream=True, timeout=self.timeout / 1000
+        )
         response.raise_for_status()
         return response
 
@@ -495,8 +497,12 @@ class YepCodeApi:
         url = urljoin(f"{self._get_base_url()}/", endpoint.lstrip("/"))
         # Detect content type
         content_type, _ = mimetypes.guess_type(data.name)
-        files = {"file": (data.name, data.file, content_type or "application/octet-stream")}
-        response = requests.post(url, headers=headers, files=files, timeout=self.timeout / 1000)
+        files = {
+            "file": (data.name, data.file, content_type or "application/octet-stream")
+        }
+        response = requests.post(
+            url, headers=headers, files=files, timeout=self.timeout / 1000
+        )
         if not response.ok:
             try:
                 error_response = response.json()
