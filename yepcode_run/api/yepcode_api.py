@@ -1,10 +1,11 @@
 import base64
 import json
-from typing import Optional, Dict, Any, List, Union, Tuple
-from datetime import datetime
+from typing import Optional, Dict, Any, List, Union
+from datetime import datetime, timezone
 import requests
 from urllib.parse import urljoin
 import mimetypes
+import re
 
 from .types import (
     YepCodeApiConfig,
@@ -135,14 +136,13 @@ class YepCodeApi:
             payload = self.access_token.split(".")[1]
             payload += "=" * ((4 - len(payload) % 4) % 4)
             decoded_payload = json.loads(base64.b64decode(payload).decode())
-            return decoded_payload["client_id"]
+            return decoded_payload["clientId"]
         except Exception as e:
             raise ValueError(f"Failed to extract client_id from access token: {e}")
 
     def _team_id_from_client_id(self) -> str:
         if not self.client_id:
             raise ValueError("Client ID is not set")
-        import re
 
         match = re.match(r"^sa-(.*)-[a-z0-9]{8}$", self.client_id)
         if not match:
@@ -155,6 +155,10 @@ class YepCodeApi:
         return f"{self.api_host}/api/{self.team_id}/rest"
 
     def _get_access_token(self) -> str:
+        if not self.client_id or not self.client_secret:
+            raise ValueError(
+                "AccessToken has expired. Provide a new one or enable automatic refreshing by providing an apiToken or clientId and clientSecret."
+            )
         try:
             auth_str = base64.b64encode(
                 f"{self.client_id}:{self.client_secret}".encode()
@@ -183,13 +187,29 @@ class YepCodeApi:
         except Exception as error:
             raise ValueError(f"Authentication failed: {str(error)}")
 
+    def _is_access_token_expired(self, access_token: str) -> bool:
+        token_payload = access_token.split(".")[1]
+        if not token_payload:
+            return True
+
+        try:
+            token_payload += "=" * ((4 - len(token_payload) % 4) % 4)
+            decoded_token_payload = json.loads(base64.b64decode(token_payload).decode())
+            expiration_time = decoded_token_payload["exp"]
+            return (
+                expiration_time is not None
+                and expiration_time < datetime.now(timezone.utc).timestamp()
+            )
+        except Exception as e:
+            return True
+
     def _request(
         self, method: str, endpoint: str, options: Optional[Dict[str, Any]] = None
     ) -> Any:
         if options is None:
             options = {}
 
-        if not self.access_token:
+        if not self.access_token or self._is_access_token_expired(self.access_token):
             self._get_access_token()
 
         headers = {
@@ -239,8 +259,8 @@ class YepCodeApi:
             return None
         if isinstance(date, datetime):
             return date.isoformat().split(".")[0]
-        if isinstance(date, str) and not date.match(
-            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"
+        if isinstance(date, str) and not re.match(
+            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$", date
         ):
             raise ValueError(
                 "Invalid date format. It must be a valid ISO 8601 date (ie: 2025-01-01T00:00:00)"
@@ -459,7 +479,9 @@ class YepCodeApi:
         }
         endpoint = f"/storage/objects/{name}"
         url = urljoin(f"{self._get_base_url()}/", endpoint.lstrip("/"))
-        response = requests.get(url, headers=headers, stream=True, timeout=self.timeout / 1000)
+        response = requests.get(
+            url, headers=headers, stream=True, timeout=self.timeout / 1000
+        )
         response.raise_for_status()
         return response
 
@@ -475,8 +497,12 @@ class YepCodeApi:
         url = urljoin(f"{self._get_base_url()}/", endpoint.lstrip("/"))
         # Detect content type
         content_type, _ = mimetypes.guess_type(data.name)
-        files = {"file": (data.name, data.file, content_type or "application/octet-stream")}
-        response = requests.post(url, headers=headers, files=files, timeout=self.timeout / 1000)
+        files = {
+            "file": (data.name, data.file, content_type or "application/octet-stream")
+        }
+        response = requests.post(
+            url, headers=headers, files=files, timeout=self.timeout / 1000
+        )
         if not response.ok:
             try:
                 error_response = response.json()
