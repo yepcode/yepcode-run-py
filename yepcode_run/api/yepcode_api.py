@@ -65,10 +65,6 @@ class YepCodeApi:
             "timeout": 60000,
             **config_dict,
         }
-        if not final_config.get("auth_url"):
-            final_config["auth_url"] = (
-                f"{final_config['api_host']}/auth/realms/yepcode/protocol/openid-connect/token"
-            )
 
         if (
             not final_config.get("access_token")
@@ -110,6 +106,7 @@ class YepCodeApi:
         self.api_host = final_config.get("api_host")
         self.client_id = final_config.get("client_id")
         self.client_secret = final_config.get("client_secret")
+        self.api_token = final_config.get("api_token")
         self.auth_url = final_config.get("auth_url")
         self.team_id = final_config.get("team_id")
         self.access_token = final_config.get("access_token")
@@ -118,6 +115,8 @@ class YepCodeApi:
             self.client_id = self._client_id_from_access_token()
         if not self.team_id and self.client_id:
             self.team_id = self._team_id_from_client_id()
+        if not self.auth_url:
+            self.auth_url = self._get_auth_url()
 
     def get_client_id(self) -> str:
         if not self.client_id:
@@ -154,23 +153,27 @@ class YepCodeApi:
     def _get_base_url(self) -> str:
         return f"{self.api_host}/api/{self.team_id}/rest"
 
+    def _get_auth_url(self) -> str:
+        return f"{self._get_base_url()}/auth/token"
+
     def _get_access_token(self) -> str:
-        if not self.client_id or not self.client_secret:
+        if not self.api_token and (not self.client_id or not self.client_secret):
             raise ValueError(
                 "AccessToken has expired. Provide a new one or enable automatic refreshing by providing an apiToken or clientId and clientSecret."
             )
         try:
-            auth_str = base64.b64encode(
+            api_token = (
+                self.api_token
+                or f"sk-{base64.b64encode(
                 f"{self.client_id}:{self.client_secret}".encode()
-            ).decode()
+            ).decode()}"
+            )
 
             response = requests.post(
                 self.auth_url,
                 headers={
-                    "Authorization": f"Basic {auth_str}",
-                    "Content-Type": "application/x-www-form-urlencoded",
+                    "x-api-token": api_token,
                 },
-                data="grant_type=client_credentials",
                 timeout=self.timeout,
             )
 
