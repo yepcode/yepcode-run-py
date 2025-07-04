@@ -38,7 +38,7 @@ class LanguageDetector:
         Pattern(r"else:", 2),  # else keyword
         Pattern(r"for (\w+|\(?\w+,( )*\w+\)?) in (.+):", 2),  # for loop
         Pattern(r"\w+( )*=( )*\w+(?!;)(\n|$)", 1),  # Variable assignment
-        Pattern(r"import ([[^\.]\w])+", 1),  # import statement
+        Pattern(r"import [^\.\s]+", 1),  # import statement
         Pattern(r"print((( )*\(.+\))|( )+.+)", 1),  # print statement
     ]
 
