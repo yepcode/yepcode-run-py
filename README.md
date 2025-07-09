@@ -205,8 +205,10 @@ The main class for executing code in YepCode's runtime environment.
 Executes code in YepCode's runtime environment.
 
 **Parameters:**
+
 - `code`: Source code to execute (string)
 - `options`: Execution options (optional)
+
   ```python
   {
       "language": Optional[str],        # 'javascript' or 'python'
@@ -227,6 +229,7 @@ Executes code in YepCode's runtime environment.
 Retrieves an existing execution by ID.
 
 **Parameters:**
+
 - `execution_id`: Unique identifier for the execution
 
 **Returns:** Execution
@@ -236,6 +239,7 @@ Retrieves an existing execution by ID.
 Represents a code execution instance.
 
 **Properties:**
+
 ```python
 class Execution:
     id: str                    # Unique identifier
@@ -252,21 +256,25 @@ class Execution:
 **Methods:**
 
 ###### `is_done() -> bool`
+
 Returns whether the execution has completed.
 
 **Returns:** bool
 
 ###### `wait_for_done() -> None`
+
 Waits for the execution to complete.
 
 **Returns:** None
 
 ###### `kill() -> None`
+
 Terminates the execution.
 
 **Returns:** None
 
 ###### `rerun() -> Execution`
+
 Creates a new execution with the same configuration.
 
 **Returns:** Execution
@@ -278,9 +286,11 @@ Manages environment variables for your YepCode workspace.
 #### Methods
 
 ##### `get_env_vars() -> List[TeamVariable]`
+
 Returns all environment variables.
 
 **Returns:** List[TeamVariable]
+
 ```python
 class TeamVariable:
     key: str
@@ -289,9 +299,11 @@ class TeamVariable:
 ```
 
 ##### `set_env_var(key: str, value: str, is_sensitive: bool = True) -> None`
+
 Sets an environment variable.
 
 **Parameters:**
+
 - `key`: Variable name
 - `value`: Variable value
 - `is_sensitive`: Whether the variable contains sensitive data (defaults to true)
@@ -299,9 +311,11 @@ Sets an environment variable.
 **Returns:** None
 
 ##### `del_env_var(key: str) -> None`
+
 Deletes an environment variable.
 
 **Parameters:**
+
 - `key`: Variable name to delete
 
 **Returns:** None
@@ -313,9 +327,11 @@ Provides direct access to the YepCode API.
 #### Methods
 
 ##### `get_processes() -> List[Process]`
+
 Returns all available processes.
 
 **Returns:** List[Process]
+
 ```python
 class Process:
     id: str
@@ -331,31 +347,38 @@ The main class for managing files in YepCode's cloud storage.
 #### Methods
 
 ##### `upload(name: str, file: bytes) -> StorageObject`
+
 Uploads a file to YepCode storage.
 
 **Parameters:**
+
 - `name`: Name of the file in storage
 - `file`: File content as bytes or a file-like object
 
 **Returns:** StorageObject
 
 ##### `download(name: str) -> bytes`
+
 Downloads a file from YepCode storage.
 
 **Parameters:**
+
 - `name`: Name of the file to download
 
 **Returns:** File content as bytes
 
 ##### `delete(name: str) -> None`
+
 Deletes a file from YepCode storage.
 
 **Parameters:**
+
 - `name`: Name of the file to delete
 
 **Returns:** None
 
 ##### `list() -> List[StorageObject]`
+
 Lists all files in YepCode storage.
 
 **Returns:** List of StorageObject
@@ -379,4 +402,4 @@ class CreateStorageObjectInput:
 
 ## License
 
-All rights reserved by YepCode. This package is part of the YepCode Platform and is subject to the [YepCode Terms of Service](https://yepcode.io/terms-of-use).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
