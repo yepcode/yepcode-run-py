@@ -107,7 +107,6 @@ class YepCodeApi:
         self.client_id = final_config.get("client_id")
         self.client_secret = final_config.get("client_secret")
         self.api_token = final_config.get("api_token")
-        self.auth_url = final_config.get("auth_url")
         self.team_id = final_config.get("team_id")
         self.access_token = final_config.get("access_token")
         self.timeout = final_config.get("timeout")
@@ -115,8 +114,6 @@ class YepCodeApi:
             self.client_id = self._client_id_from_access_token()
         if not self.team_id and self.client_id:
             self.team_id = self._team_id_from_client_id()
-        if not self.auth_url:
-            self.auth_url = self._get_auth_url()
 
     def get_client_id(self) -> str:
         if not self.client_id:
@@ -170,7 +167,7 @@ class YepCodeApi:
             )
 
             response = requests.post(
-                self.auth_url,
+                self._get_auth_url(),
                 headers={
                     "x-api-token": api_token,
                 },

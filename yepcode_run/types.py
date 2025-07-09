@@ -14,7 +14,6 @@ class ExecutionStatus(Enum):
 
 @dataclass
 class YepCodeApiConfig:
-    auth_url: Optional[str] = None
     api_host: Optional[str] = None
     timeout: Optional[int] = None
     access_token: Optional[str] = None
