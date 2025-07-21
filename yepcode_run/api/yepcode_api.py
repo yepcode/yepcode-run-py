@@ -132,7 +132,7 @@ class YepCodeApi:
             payload = self.access_token.split(".")[1]
             payload += "=" * ((4 - len(payload) % 4) % 4)
             decoded_payload = json.loads(base64.b64decode(payload).decode())
-            return decoded_payload["clientId"]
+            return decoded_payload["client_id"]
         except Exception as e:
             raise ValueError(f"Failed to extract client_id from access token: {e}")
 
