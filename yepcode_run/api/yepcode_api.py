@@ -470,8 +470,8 @@ class YepCodeApi:
     ) -> VersionedModuleAlias:
         return self._request("POST", f"/modules/{module_id}/aliases", {"data": data})
 
-    def get_objects(self) -> List[StorageObject]:
-        response = self._request("GET", "/storage/objects")
+    def get_objects(self, params: Optional[Dict[str, Any]] = None) -> List[StorageObject]:
+        response = self._request("GET", "/storage/objects", {"params": params or {}})
         return [StorageObject.from_dict(obj) for obj in response]
 
     def get_object(self, name: str) -> requests.Response:
