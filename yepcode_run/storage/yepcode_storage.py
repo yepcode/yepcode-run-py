@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Dict, Any
 
 from ..api.api_manager import YepCodeApiManager
 from ..api.types import CreateStorageObjectInput, StorageObject, YepCodeApiConfig
@@ -25,5 +25,5 @@ class YepCodeStorage:
     def delete(self, name: str) -> None:
         return self._api.delete_object(name)
 
-    def list(self) -> List[StorageObject]:
-        return self._api.get_objects()
+    def list(self, **kwargs) -> List[StorageObject]:
+        return self._api.get_objects(kwargs if kwargs else None)
