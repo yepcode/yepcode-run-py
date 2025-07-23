@@ -140,8 +140,8 @@ class YepCodeApi:
         if not self.client_id:
             raise ValueError("Client ID is not set")
 
-        if self.client_id.startswith("yc-storage-api-sa-"):
-            return self.client_id.split("-")[4]
+        if self.client_id.startswith("yc-storage-api-sa"):
+            return self.client_id[18:]
 
         match = re.match(r"^sa-(.*)-[a-z0-9]{8}$", self.client_id)
         if not match:
