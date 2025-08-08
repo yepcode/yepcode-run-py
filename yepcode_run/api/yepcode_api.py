@@ -162,11 +162,10 @@ class YepCodeApi:
                 "AccessToken has expired. Provide a new one or enable automatic refreshing by providing an apiToken or clientId and clientSecret."
             )
         try:
+            credentials = f"{self.client_id}:{self.client_secret}"
             api_token = (
                 self.api_token
-                or f"sk-{base64.b64encode(
-                f"{self.client_id}:{self.client_secret}".encode()
-            ).decode()}"
+                or f"sk-{base64.b64encode(credentials.encode()).decode()}"
             )
 
             response = requests.post(
