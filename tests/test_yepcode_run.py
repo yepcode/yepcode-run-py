@@ -7,6 +7,16 @@ def random_hex():
     return secrets.token_hex(2)
 
 
+def random_js_comment():
+    """Generate a random JavaScript comment to avoid parallel execution conflicts"""
+    return f"// random comment to avoid parallel executions conflict {random_hex()}"
+
+
+def random_py_comment():
+    """Generate a random Python comment to avoid parallel execution conflicts"""
+    return f"# random comment to avoid parallel executions conflict {random_hex()}"
+
+
 @pytest.fixture(scope="session")
 def yep_code_env():
     env = YepCodeEnv()
@@ -46,15 +56,16 @@ def test_manage_env_vars(yep_code_env):
 
 def test_run_javascript_code(yep_code_run):
     execution = yep_code_run.run(
-        """async function main() {
-    const message = `Hello, ${process.env.WORLD_ENV_VAR}!`
+        f"""async function main() {{
+    {random_js_comment()}
+    const message = `Hello, ${{process.env.WORLD_ENV_VAR}}!`
     console.log(message)
-    return { message }
-}
+    return {{ message }}
+}}
 
-module.exports = {
+module.exports = {{
     main,
-};""",
+}};""",
         {"removeOnDone": True},
     )
     execution.wait_for_done()
@@ -64,12 +75,13 @@ module.exports = {
 
 def test_run_python_code(yep_code_run):
     execution = yep_code_run.run(
-        """import os
+        f"""import os
 
 def main():
-    message = f"Hello, {os.getenv('WORLD_ENV_VAR')}!"
+    {random_py_comment()}
+    message = f"Hello, {{os.getenv('WORLD_ENV_VAR')}}!"
     print(message)
-    return {"message": message}""",
+    return {{"message": message}}""",
         {"removeOnDone": True},
     )
     execution.wait_for_done()
@@ -80,13 +92,14 @@ def main():
 def test_trigger_on_log(yep_code_run):
     logs = []
     execution = yep_code_run.run(
-        """async function main() {
+        f"""async function main() {{
+    {random_js_comment()}
     console.log("Log message 1")
     console.log("Log message 2")
-    return { success: true }
-}
+    return {{ success: true }}
+}}
 
-module.exports = { main };""",
+module.exports = {{ main }};""",
         {
             "removeOnDone": True,
             "onLog": lambda log_entry: logs.append(log_entry.message),
@@ -106,11 +119,12 @@ def test_trigger_on_finish(yep_code_run):
         finish_value = return_value
 
     execution = yep_code_run.run(
-        """async function main() {
-    return { data: "test data" }
-}
+        f"""async function main() {{
+    {random_js_comment()}
+    return {{ data: "test data" }}
+}}
 
-module.exports = { main };""",
+module.exports = {{ main }};""",
         {"removeOnDone": True, "onFinish": on_finish},
     )
 
@@ -126,11 +140,12 @@ def test_trigger_on_error(yep_code_run):
         error_message = error["message"]
 
     execution = yep_code_run.run(
-        """async function main() {
+        f"""async function main() {{
+    {random_js_comment()}
     throw new Error("Test error");
-}
+}}
 
-module.exports = { main };""",
+module.exports = {{ main }};""",
         {"removeOnDone": True, "onError": on_error},
     )
 
@@ -147,10 +162,11 @@ def test_handle_all_events_python(yep_code_run):
         finish_value = return_value
 
     execution = yep_code_run.run(
-        """def main():
+        f"""def main():
+    {random_py_comment()}
     print("Log message 1")
     print("Log message 2")
-    return {"data": "python test"}""",
+    return {{"data": "python test"}}""",
         {
             "language": "python",
             "removeOnDone": True,
