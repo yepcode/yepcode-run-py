@@ -2,22 +2,41 @@ name: Tests
 on:
   workflow_call:
   workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: python:3.12-slim
-      env:
-        YEPCODE_API_TOKEN: ${{ secrets.TEST_YEPCODE_API_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    
     steps:
       - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl gcc g++
+      
       - name: Configure poetry
-        run: |-
-          apt update && apt install -y curl gcc g++ && curl -sSL https://install.python-poetry.org | python3 -
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
           export PATH="${PATH}:${HOME}/.local/bin"
           echo "${HOME}/.local/bin" >> $GITHUB_PATH
           poetry install
+        env:
+          YEPCODE_API_TOKEN: ${{ secrets.TEST_YEPCODE_API_TOKEN }}
+      
       - name: Run pytest
         run: "poetry run pytest"
+        env:
+          YEPCODE_API_TOKEN: ${{ secrets.TEST_YEPCODE_API_TOKEN }}
+      
       - name: Build
         run: "poetry build"
