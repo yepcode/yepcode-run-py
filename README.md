@@ -10,9 +10,9 @@
 
 ## What is YepCode Run?
 
-[YepCode Run](https://yepcode.io/run) is a powerful serverless runtime that enables secure code execution in isolated sandboxes. With our comprehensive SDK and platform, you can effortlessly build, manage, and monitor your script executions. Get started quickly using our [JavaScript SDK](https://www.npmjs.com/package/@yepcode/run) or [Python SDK](https://pypi.org/project/yepcode-run).
+[YepCode Run](https://yepcode.io/l/aI1n2) is a powerful serverless runtime that enables secure code execution in isolated sandboxes. With our comprehensive SDK and platform, you can effortlessly build, manage, and monitor your script executions. Get started quickly using our [JavaScript SDK](https://www.npmjs.com/package/@yepcode/run) or [Python SDK](https://pypi.org/project/yepcode-run).
 
-Powered by [YepCode Cloud](https://yepcode.io/), our enterprise-grade platform delivers seamless script execution capabilities for AI agents, data processing pipelines, API integrations, and automation workflows. Focus on your code while we handle the infrastructure.
+Powered by [YepCode Cloud](https://yepcode.io/l/htkzV), our enterprise-grade platform delivers seamless script execution capabilities for AI agents, data processing pipelines, API integrations, and automation workflows. Focus on your code while we handle the infrastructure.
 
 ## Quick start
 
@@ -24,7 +24,7 @@ pip install yepcode-run
 
 ### 2. Get your YepCode API token
 
-1. Sign up to [YepCode Cloud](https://cloud.yepcode.io)
+1. Sign up to [YepCode Cloud](https://yepcode.io/l/htkzV)
 2. Get your API token from your workspace under: `Settings` > `API credentials`
 3. Use your API token securely in one of these ways:
 
