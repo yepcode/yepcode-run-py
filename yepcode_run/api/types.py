@@ -468,3 +468,82 @@ class StorageObject:
 class CreateStorageObjectInput:
     name: str
     file: Any
+
+
+# Service account types
+@dataclass
+class ServiceAccount:
+    id: str
+    name: str
+    client_id: str
+    client_secret: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+
+@dataclass
+class ServiceAccountInput:
+    name: str
+
+
+# Dependency manifest types
+@dataclass
+class ProgrammingLanguageManifest:
+    id: str
+    programming_language: ProgrammingLanguage
+    dependencies: Optional[Dict[str, str]] = None
+    next_installation: Optional[Dict[str, str]] = None
+
+
+@dataclass
+class UpdateTeamDependenciesInput:
+    dependencies: Optional[Dict[str, str]] = None
+
+
+# Team types
+@dataclass
+class Team:
+    slug: str
+    name: str
+    zone_id: Optional[str] = None
+    parent_team_slugs: Optional[List[str]] = None
+    params_schema_validation_enabled: Optional[bool] = None
+    error_handler_config: Optional[Dict[str, Any]] = None
+    created_at: Optional[datetime] = None
+
+
+@dataclass
+class UpdateTeamInput:
+    name: Optional[str] = None
+    zone_id: Optional[str] = None
+    parent_team_slugs: Optional[List[str]] = None
+    params_schema_validation_enabled: Optional[bool] = None
+    error_handler_config: Optional[Dict[str, Any]] = None
+
+
+# Sandbox types
+@dataclass
+class Sandbox:
+    id: str
+    name: str
+    grpc_server_url: Optional[str] = None
+    grpc_api_key: Optional[str] = None
+    image_id: Optional[str] = None
+    public_http_ports: Optional[List[int]] = None
+    metadata: Optional[Dict[str, Any]] = None
+    timeout_at: Optional[datetime] = None
+
+
+@dataclass
+class CreateSandboxInput:
+    name: str
+    image_id: Optional[str] = None
+    timeout: Optional[int] = None
+    metadata: Optional[Dict[str, Any]] = None
+    public_http_ports: Optional[List[int]] = None
+    public_http_ports_basic_auth: Optional[Dict[str, str]] = None
+
+
+@dataclass
+class UpdateSandboxInput:
+    timeout: Optional[int] = None
