@@ -523,16 +523,6 @@ class YepCodeApi:
     def delete_process_version_alias(self, process_id: str, alias_id: str) -> None:
         self._request("DELETE", f"/processes/{process_id}/aliases/{alias_id}")
 
-    def get_process_dependencies(self, process_id: str) -> ProgrammingLanguageManifest:
-        return self._request("GET", f"/processes/{process_id}/dependencies")
-
-    def update_process_dependencies(
-        self, process_id: str, data: UpdateTeamDependenciesInput
-    ) -> ProgrammingLanguageManifest:
-        return self._request(
-            "PUT", f"/processes/{process_id}/dependencies", {"data": data}
-        )
-
     def update_schedule(self, id: str, data: ScheduledProcessInput) -> Schedule:
         return self._request("PATCH", f"/schedules/{id}", {"data": data})
 
