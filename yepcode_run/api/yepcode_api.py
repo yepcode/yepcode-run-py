@@ -42,6 +42,16 @@ from .types import (
     ScheduledProcessInput,
     CreateStorageObjectInput,
     StorageObject,
+    ServiceAccount,
+    ServiceAccountInput,
+    ProgrammingLanguage,
+    ProgrammingLanguageManifest,
+    UpdateTeamDependenciesInput,
+    Team,
+    UpdateTeamInput,
+    Sandbox,
+    CreateSandboxInput,
+    UpdateSandboxInput,
 )
 
 
@@ -468,6 +478,99 @@ class YepCodeApi:
         self, module_id: str, data: VersionedModuleAliasInput
     ) -> VersionedModuleAlias:
         return self._request("POST", f"/modules/{module_id}/aliases", {"data": data})
+
+    def get_module_version(self, module_id: str, version_id: str) -> VersionedModule:
+        return self._request("GET", f"/modules/{module_id}/versions/{version_id}")
+
+    def delete_module_version(self, module_id: str, version_id: str) -> None:
+        self._request("DELETE", f"/modules/{module_id}/versions/{version_id}")
+
+    def get_module_version_alias(
+        self, module_id: str, alias_id: str
+    ) -> VersionedModuleAlias:
+        return self._request("GET", f"/modules/{module_id}/aliases/{alias_id}")
+
+    def update_module_version_alias(
+        self, module_id: str, alias_id: str, data: VersionedModuleAliasInput
+    ) -> VersionedModuleAlias:
+        return self._request(
+            "PATCH", f"/modules/{module_id}/aliases/{alias_id}", {"data": data}
+        )
+
+    def delete_module_version_alias(self, module_id: str, alias_id: str) -> None:
+        self._request("DELETE", f"/modules/{module_id}/aliases/{alias_id}")
+
+    def get_process_version(
+        self, process_id: str, version_id: str
+    ) -> VersionedProcess:
+        return self._request("GET", f"/processes/{process_id}/versions/{version_id}")
+
+    def delete_process_version(self, process_id: str, version_id: str) -> None:
+        self._request("DELETE", f"/processes/{process_id}/versions/{version_id}")
+
+    def get_process_version_alias(
+        self, process_id: str, alias_id: str
+    ) -> VersionedProcessAlias:
+        return self._request("GET", f"/processes/{process_id}/aliases/{alias_id}")
+
+    def update_process_version_alias(
+        self, process_id: str, alias_id: str, data: VersionedProcessAliasInput
+    ) -> VersionedProcessAlias:
+        return self._request(
+            "PATCH", f"/processes/{process_id}/aliases/{alias_id}", {"data": data}
+        )
+
+    def delete_process_version_alias(self, process_id: str, alias_id: str) -> None:
+        self._request("DELETE", f"/processes/{process_id}/aliases/{alias_id}")
+
+    def update_schedule(self, id: str, data: ScheduledProcessInput) -> Schedule:
+        return self._request("PATCH", f"/schedules/{id}", {"data": data})
+
+    def get_service_accounts(self) -> List[ServiceAccount]:
+        return self._request("GET", "/auth/service-accounts")
+
+    def create_service_account(self, data: ServiceAccountInput) -> ServiceAccount:
+        return self._request("POST", "/auth/service-accounts", {"data": data})
+
+    def delete_service_account(self, id: str) -> None:
+        self._request("DELETE", f"/auth/service-accounts/{id}")
+
+    def get_team_dependencies(
+        self, language: ProgrammingLanguage
+    ) -> ProgrammingLanguageManifest:
+        return self._request("GET", f"/dependencies/{language.value}")
+
+    def update_team_dependencies(
+        self, language: ProgrammingLanguage, data: UpdateTeamDependenciesInput
+    ) -> ProgrammingLanguageManifest:
+        return self._request(
+            "PUT", f"/dependencies/{language.value}", {"data": data}
+        )
+
+    def install_team_dependencies(
+        self, language: ProgrammingLanguage
+    ) -> ProgrammingLanguageManifest:
+        return self._request("POST", f"/dependencies/{language.value}/install")
+
+    def discard_team_dependencies_installation(
+        self, language: ProgrammingLanguage
+    ) -> None:
+        self._request("DELETE", f"/dependencies/{language.value}/install")
+
+    def get_team(self) -> Team:
+        return self._request("GET", "/team")
+
+    def update_team(self, data: UpdateTeamInput) -> Team:
+        return self._request("PATCH", "/team", {"data": data})
+
+    def create_sandbox(self, data: CreateSandboxInput) -> Sandbox:
+        return self._request("POST", "/sandboxes", {"data": data})
+
+    def update_sandbox(self, sandbox_id: str, data: UpdateSandboxInput) -> Sandbox:
+        return self._request("POST", f"/sandboxes/{sandbox_id}", {"data": data})
+
+    def kill_sandbox(self, sandbox_id: str) -> None:
+        self._request("POST", f"/sandboxes/{sandbox_id}/kill")
 
     def get_objects(self, params: Optional[Dict[str, Any]] = None) -> List[StorageObject]:
         response = self._request("GET", "/storage/objects", {"params": params or {}})
