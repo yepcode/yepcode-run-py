@@ -470,22 +470,6 @@ class CreateStorageObjectInput:
     file: Any
 
 
-# Service account types
-@dataclass
-class ServiceAccount:
-    id: str
-    name: str
-    client_id: str
-    client_secret: Optional[str] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
-
-
-@dataclass
-class ServiceAccountInput:
-    name: str
-
-
 # Dependency manifest types
 @dataclass
 class ProgrammingLanguageManifest:

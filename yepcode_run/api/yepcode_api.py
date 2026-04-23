@@ -42,8 +42,6 @@ from .types import (
     ScheduledProcessInput,
     CreateStorageObjectInput,
     StorageObject,
-    ServiceAccount,
-    ServiceAccountInput,
     ProgrammingLanguage,
     ProgrammingLanguageManifest,
     UpdateTeamDependenciesInput,
@@ -525,15 +523,6 @@ class YepCodeApi:
 
     def update_schedule(self, id: str, data: ScheduledProcessInput) -> Schedule:
         return self._request("PATCH", f"/schedules/{id}", {"data": data})
-
-    def get_service_accounts(self) -> List[ServiceAccount]:
-        return self._request("GET", "/auth/service-accounts")
-
-    def create_service_account(self, data: ServiceAccountInput) -> ServiceAccount:
-        return self._request("POST", "/auth/service-accounts", {"data": data})
-
-    def delete_service_account(self, id: str) -> None:
-        self._request("DELETE", f"/auth/service-accounts/{id}")
 
     def get_team_dependencies(
         self, language: ProgrammingLanguage
