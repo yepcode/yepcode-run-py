@@ -470,6 +470,27 @@ class CreateStorageObjectInput:
     file: Any
 
 
+@dataclass
+class CreateSignedUrlInput:
+    path: str
+    expires_in_seconds: Optional[int] = None
+
+
+@dataclass
+class SignedUrl:
+    url: str
+    path: str
+    expires_at: str
+
+    @staticmethod
+    def from_dict(data: dict) -> "SignedUrl":
+        return SignedUrl(
+            url=data["url"],
+            path=data["path"],
+            expires_at=data.get("expiresAt", data.get("expires_at")),
+        )
+
+
 # Dependency manifest types
 @dataclass
 class ProgrammingLanguageManifest:
