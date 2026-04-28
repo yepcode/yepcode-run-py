@@ -1,5 +1,9 @@
+import os
+import tempfile
 import time
+import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 
 import pytest
 import requests
@@ -29,6 +33,43 @@ def uploaded_file(storage):
 
 def _parse_iso(value: str) -> float:
     return datetime.fromisoformat(value.replace("Z", "+00:00")).timestamp()
+
+
+@pytest.mark.skipif(
+    os.getenv("RUN_SIGNED_URL_TESTS", "false").lower() != "true",
+    reason="Set RUN_SIGNED_URL_TESTS=true to run signed URL end-to-end tests.",
+)
+def test_create_signed_url_e2e_matches_js_flow(storage):
+    file_name = f"sdk-signed-url-test-{uuid.uuid4().hex}.txt"
+    original_content = f"signed-url-test-content-{int(time.time() * 1000)}"
+
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt") as temp_file:
+        temp_file.write(original_content)
+        local_file_path = Path(temp_file.name)
+
+    try:
+        storage.upload(file_name, local_file_path.read_bytes())
+        signed_url = storage.create_signed_url(file_name, expires_in_seconds=120)
+
+        assert isinstance(signed_url.url, str)
+        assert len(signed_url.url) > 0
+        assert signed_url.path == file_name
+        assert _parse_iso(signed_url.expires_at) > time.time()
+
+        print(signed_url.url)
+
+        response = requests.get(signed_url.url, timeout=30)
+        assert response.ok
+        assert response.text == original_content
+    finally:
+        try:
+            storage.delete(file_name)
+            pass
+        except Exception:
+            pass
+
+        if local_file_path.exists():
+            local_file_path.unlink()
 
 
 @pytest.mark.skip(reason="Requires the signed-urls endpoint deployed in the target environment")
