@@ -42,6 +42,8 @@ from .types import (
     ScheduledProcessInput,
     CreateStorageObjectInput,
     StorageObject,
+    CreateSignedUrlInput,
+    SignedUrl,
     ProgrammingLanguage,
     ProgrammingLanguageManifest,
     UpdateTeamDependenciesInput,
@@ -629,3 +631,10 @@ class YepCodeApi:
                 response.status_code,
             )
         return None
+
+    def create_signed_url(self, data: CreateSignedUrlInput) -> SignedUrl:
+        body: Dict[str, Any] = {"path": data.path}
+        if data.expires_in_seconds is not None:
+            body["expiresInSeconds"] = data.expires_in_seconds
+        response = self._request("POST", "/storage/signed-urls", {"data": body})
+        return SignedUrl.from_dict(response)

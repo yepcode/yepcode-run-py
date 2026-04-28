@@ -1,7 +1,13 @@
 from typing import List, Optional, Dict, Any
 
 from ..api.api_manager import YepCodeApiManager
-from ..api.types import CreateStorageObjectInput, StorageObject, YepCodeApiConfig
+from ..api.types import (
+    CreateSignedUrlInput,
+    CreateStorageObjectInput,
+    SignedUrl,
+    StorageObject,
+    YepCodeApiConfig,
+)
 
 
 class YepCodeStorage:
@@ -27,3 +33,10 @@ class YepCodeStorage:
 
     def list(self, **kwargs) -> List[StorageObject]:
         return self._api.get_objects(kwargs if kwargs else None)
+
+    def create_signed_url(
+        self, name: str, expires_in_seconds: Optional[int] = None
+    ) -> SignedUrl:
+        return self._api.create_signed_url(
+            CreateSignedUrlInput(path=name, expires_in_seconds=expires_in_seconds)
+        )

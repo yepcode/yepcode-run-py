@@ -126,6 +126,14 @@ objects = storage.list()
 for obj in objects:
     print(obj.name, obj.size, obj.link)
 
+# Create a signed URL (default expiry: 1 hour)
+signed = storage.create_signed_url('myfile.txt')
+print('Signed URL:', signed.url)
+print('Expires at:', signed.expires_at)
+
+# Create a signed URL with custom expiry (in seconds)
+short_lived = storage.create_signed_url('myfile.txt', expires_in_seconds=300)
+
 # Download a file
 content = storage.download('myfile.txt')
 with open('downloaded.txt', 'wb') as f:
@@ -383,6 +391,17 @@ Lists all files in YepCode storage.
 
 **Returns:** List of StorageObject
 
+##### `create_signed_url(name: str, expires_in_seconds: Optional[int] = None) -> SignedUrl`
+
+Creates a temporary signed URL for a storage object.
+
+**Parameters:**
+
+- `name`: Name of the file in storage
+- `expires_in_seconds`: Expiration time for the URL in seconds (optional)
+
+**Returns:** SignedUrl
+
 #### Types
 
 ```python
@@ -398,6 +417,15 @@ class StorageObject:
 class CreateStorageObjectInput:
     name: str           # File name
     file: Any           # File content (bytes or file-like)
+
+class CreateSignedUrlInput:
+    path: str                           # File path in storage
+    expires_in_seconds: Optional[int]   # Expiration time in seconds
+
+class SignedUrl:
+    url: str          # Temporary signed URL
+    path: str         # File path in storage
+    expires_at: str   # Expiration timestamp (ISO8601)
 ```
 
 ## License
